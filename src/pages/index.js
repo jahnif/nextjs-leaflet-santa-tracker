@@ -15,8 +15,27 @@ const DEFAULT_CENTER = [38.907132, -77.036546];
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function Home() {
+  const currentDate = new Date(Date.now());
+  const currentYear = currentDate.getFullYear();
+
   const { data } = useSWR('https://firebasestorage.googleapis.com/v0/b/santa-tracker-firebase.appspot.com/o/route%2Fsanta_en.json?alt=media&2018b', fetcher);
   console.log(data);
+
+  const destinations = data?.destinations.map((destination) => {
+    const { arrival, departure } = destination;
+
+    const arrivalDate = new Date(arrival);
+    const departureDate = new Date(departure);
+
+    arrivalDate.setFullYear(currentYear);
+    departureDate.setFullYear(currentYear);
+
+    return {
+      ...destination,
+      arrival: arrivalDate.getTime(),
+      departure: departureDate.getTime(),
+    };
+  });
   return (
     <Layout>
       <Head>
@@ -33,7 +52,7 @@ export default function Home() {
             {({ TileLayer, Marker, Popup }) => (
               <>
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors' />
-                {data?.destinations?.map(({ id, arrival, departure, location, city, region }) => {
+                {destinations?.map(({ id, arrival, departure, location, city, region }) => {
                   const arrivalDate = new Date(arrival);
                   const arrivalHours = arrivalDate.getHours();
                   const arrivalMinutes = arrivalDate.getMinutes();

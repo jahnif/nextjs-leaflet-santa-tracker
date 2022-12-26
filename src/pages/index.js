@@ -15,7 +15,8 @@ const DEFAULT_CENTER = [38.907132, -77.036546];
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function Home() {
-  const currentDate = new Date(Date.now());
+  // const currentDate = new Date(Date.now());
+  const currentDate = new Date('2022-12-25T02:34:30.115Z');
   const currentYear = currentDate.getFullYear();
 
   const { data } = useSWR('https://firebasestorage.googleapis.com/v0/b/santa-tracker-firebase.appspot.com/o/route%2Fsanta_en.json?alt=media&2018b', fetcher);
@@ -63,14 +64,36 @@ export default function Home() {
                   const departureMinutes = departureDate.getMinutes();
                   const departureTime = `${departureHours}:${departureMinutes}`;
 
+                  const santaWasHere = currentDate.getTime() - departureDate.getTime() > 0;
+                  const santaIsHere = currentDate.getTime() - arrivalDate.getTime() > 0 && !santaWasHere;
+
+                  let iconUrl = '/images/tree-marker-icon.png';
+                  let iconRetinaUrl = '/images/tree-marker-icon-2x.png';
+
+                  if (santaWasHere) {
+                    iconUrl = '/images/gift-marker-icon.png';
+                    iconRetinaUrl = '/images/gift-marker-icon-2x.png';
+                  }
+                  if (santaIsHere) {
+                    iconUrl = '/images/santa-marker-icon.png';
+                    iconRetinaUrl = '/images/santa-marker-icon-2x.png';
+                  }
+
+                  let className = '';
+
+                  if (santaIsHere) {
+                    className = `${className} ${styles.iconSantaIsHere}`;
+                  }
+
                   return (
                     <Marker
                       key={id}
                       position={[location.lat, location.lng]}
                       icon={Leaflet.icon({
-                        iconUrl: '/images/tree-marker-icon.png',
-                        iconRetinaUrl: '/images/tree-marker-icon-2x.png',
+                        iconUrl,
+                        iconRetinaUrl,
                         iconSize: [41, 41],
+                        className,
                       })}
                     >
                       <Popup>
